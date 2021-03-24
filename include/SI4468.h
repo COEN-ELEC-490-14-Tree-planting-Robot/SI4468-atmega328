@@ -35,16 +35,20 @@
 #define WRITE_TX_FIFO 0x66
 #define READ_RX_FIFO 0x77
 
-#define NOCHANGE 0
-#define SLEEP 1
-#define SPI_ACTIVE 2
-#define READY 3
-#define TX_TUNE	5
-#define RX_TUNE 6
-#define TX 7
-#define RX 8
+//Group
+#define PROP_GROUP_PA 0x22
+#define PROP_GROUP_PKT 0x12 ///< Property group packet config
+#define PKT_PROP(prop) ((PROP_GROUP_PKT<<8) | prop)
+#define PA_PROP(prop) ((PROP_GROUP_PA<<8) | prop)
+#define	PA_PWR_LVL PA_PROP(0x01)
+#define PKT_FIELD_2_LENGTH_LOW PKT_PROP(0x12)
+
+#define MAX_PACKET_LEN	128
 
 static const uint8_t config[]  = RADIO_CONFIGURATION_DATA_ARRAY;
+
+#define SI4468_FIXED_LENGTH 0
+#define IDLE_STATE SI446X_STATE_READY
 
 typedef enum
 {
@@ -62,16 +66,26 @@ typedef enum
 #ifndef SI4468_H_
 #define SI4468_H_
 
-uint8_t SI4468_CLEAR_INTERRUPT(void* buff);
+uint8_t SI4468_Clear_All_Interrupt(void* buff);
+uint8_t SI4468_Clear_Some_Interrupts(void* buff, uint8_t clearPH, uint8_t clearMODEM, uint8_t clearCHIP);
 uint8_t SI4468_INIT();
-uint8_t SI4468_SETSTATE(si446x_state_t newState);
-uint8_t SI4468_DOAPI(void* data, uint8_t len, void* out, uint8_t outLen);
+uint8_t SI4468_SetState(si446x_state_t newState);
+uint8_t SI4468_DoAPI(void* data, uint8_t len, void* out, uint8_t outLen);
 uint8_t waitForResponse(void* out, uint8_t outLen, uint8_t useTimeout);
 uint8_t getResponse(void* buff, uint8_t len);
+si446x_state_t SI4468_GetState(void);
+uint8_t SI4468_Sleep();
+uint8_t setProperties(uint16_t prop, void* values, uint8_t len);
+inline uint8_t setProperty(uint16_t prop, uint8_t value){return setProperties(prop, &value, 1);}
+// Read a single property
+uint8_t getProperties(uint16_t prop, void* values, uint8_t len);
+inline uint8_t getProperty(uint16_t prop) { uint8_t val; getProperties(prop, &val, 1); return val;}
+uint8_t Si446x_TX(void* packet, uint8_t len, uint8_t channel, si446x_state_t onTxFinish);
+uint8_t Si446x_RX(uint8_t channel);
 
 //Deprecated functions,Need change
 //######################################################################################################################
-uint8_t SI4468_WAITCTS();
+uint8_t SI4468_WaitCTS();
 uint8_t SI4468_NOP();
 void SI4468_PART_INFO();
 void SI4468_FUNC_INFO();
@@ -84,7 +98,6 @@ void SI4468_START_RX(uint8_t channel, bool START, uint8_t RXTIMEOUT_STATE, uint8
 uint8_t SI4468_WriteTxDataBuffer(uint8_t * data , uint8_t size);
 uint8_t SI4468_ReadRxDataBuffer();
 uint8_t SI4468_GPIO_PIN_CFG();
-uint8_t SI4468_CHANGE_STATE(uint8_t state);
 uint8_t SI4468_GET_INT_STATUS(bool);
 uint8_t SI4468_REQUEST_DEVICE_STATE();
 

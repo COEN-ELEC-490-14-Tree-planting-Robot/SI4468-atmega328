@@ -38,25 +38,19 @@ static uint8_t debugging=0;
 int main_station(void)
 {
 	
-	SI4468_START_RX(0,true,7,6,0);
-	while (1) {
-		SI4468_ReadRxDataBuffer();
-		_delay_ms(500);
+	while (1)
+	{
+		USART_0_write(SI4468_GetState());
+		_delay_ms(3000);
 	}
 }
 
 int main_turtlebot(void)
 {
-	SI4468_START_TX(1,5,false,true);
-	if (PD6_get_level() || PD7_get_level());
-		SI4468_CHANGE_STATE(SLEEP);
-	USART_0_write(PD6_get_level());
-	USART_0_write(PD7_get_level());
-	//SI4468_REQUEST_DEVICE_STATE();
-	while (1) {
-		USART_0_write(SI4468_WriteTxDataBuffer("Hello",strlen("Hello"))) ;
-		SI4468_START_TX(1,5,false,true);
-		_delay_ms(500);
+	while (1)
+	{
+		USART_0_write(SI4468_GetState());
+		_delay_ms(3000);
 	}
 }
 
@@ -72,18 +66,20 @@ int main(void)
 	//USART_0_write('b');
 	//USART_0_write(SI4468_START_SEQUENCE());
 	
-	
-	//main_station();
-	//main_turtlebot();
 	SI4468_INIT();
+	main_station();
+	//main_turtlebot();
 	
 	
+	/*
 	while (1)
 	{
-		USART_0_write(PD4_get_level());
+		//USART_0_write(PD4_get_level());
+		USART_0_write(SI4468_GetState());
 		//USART_0_write(SI4468_WAITCTS());
 		_delay_ms(3000);
 	}
+	*/
 	return 0;
 }
 

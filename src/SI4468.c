@@ -12,17 +12,37 @@
 
 
 //Working methods
-uint8_t SI4468_DOAPI(void* data, uint8_t len, void* out, uint8_t outLen){
+uint8_t SI4468_WaitCTS(){
+	uint8_t bCtsValue;
+	int bErrCnt;
+	bCtsValue = 0;
+	bErrCnt = 0;
+	while (bCtsValue!=0xFF) // Wait until radio IC is ready with the data
+	{
+		PB2_set_level(0); // select radio IC by pulling its nSEL pin low
+		_delay_us(10);
+		bCtsValue=READ_CMD_BUFF;
+		bCtsValue=SPI_0_exchange_byte(bCtsValue); // Read command buffer; send command byte
+		PB2_set_level(1); // If CTS is not 0xFF, put NSS high and stay in waiting
+		if (++bErrCnt > MAX_CTS)
+		{
+			return ERROR; // Error handling; if wrong CTS reads exceeds a limit
+		}
+	}
+	return SUCCESS;
+}
+
+uint8_t SI4468_DoAPI(void* data, uint8_t len, void* out, uint8_t outLen){
 	//uint16_t timeout = 40000;
 	//while( SI4468_WAITCTS()==ERROR && !--timeout )
 	//_delay_us(10);
-	if( SI4468_WAITCTS() == SUCCESS){
+	if( SI4468_WaitCTS() == SUCCESS){
 		SPI_0_write_block((uint8_t*)data,len);
 		if( ((uint8_t*)data)[0] == IRCAL && waitForResponse(NULL,0,0) == SUCCESS )
 		return SUCCESS;
 		else if(out != NULL && waitForResponse(out,outLen,1) == SUCCESS )
 		return SUCCESS;
-		else if( SI4468_WAITCTS() )
+		else if( SI4468_WaitCTS() )
 		return SUCCESS;
 		return ERROR;
 	}
@@ -63,10 +83,30 @@ uint8_t getResponse(void* buff, uint8_t len)
 	return cts;
 }
 
-uint8_t SI4468_CLEAR_INTERRUPT(void* buff)
+// Read a fast response register
+uint8_t getFRR(uint8_t reg)
+{
+	uint8_t frr = 0;
+	SPI_0_write_block(reg,1);
+	frr = SPI_0_exchange_byte(frr);
+	return frr;
+}
+
+uint8_t SI4468_Clear_All_Interrupt(void* buff)
 {
 	uint8_t data = GET_INT_STATUS;
-	SI4468_DOAPI(&data, sizeof(data), buff, 8);
+	SI4468_DoAPI(&data, sizeof(data), buff, 8);
+}
+
+uint8_t SI4468_Clear_Some_Interrupts(void* buff, uint8_t clearPH, uint8_t clearMODEM, uint8_t clearCHIP)
+{
+	uint8_t data[] = {
+		GET_INT_STATUS,
+		clearPH,
+		clearMODEM,
+		clearCHIP
+	};
+	return SI4468_DoAPI(data, sizeof(data), buff, 8);
 }
 
 uint8_t SI4468_INIT(){
@@ -78,27 +118,152 @@ uint8_t SI4468_INIT(){
 	_delay_ms(6);
 	
 	uint8_t buff[17];
-	for(uint16_t i = 0, temp = 0; i < sizeof(config)-1; ++i)
-	{
+	for(uint16_t i = 0, temp = 0; i < sizeof(config)-1; ++i){
 		memcpy(buff, &config[i], sizeof(buff));
 		temp = buff[0];
-		SI4468_DOAPI(&buff[1], buff[0], NULL, 0);
+		SI4468_DoAPI(&buff[1], buff[0], NULL, 0);
 		i += temp;
 	}
 	
-	SI4468_CLEAR_INTERRUPT(NULL);
+	SI4468_Clear_All_Interrupt(NULL);
 }
 
-uint8_t SI4468_SETSTATE(si446x_state_t newState)
+uint8_t SI4468_SetState(si446x_state_t newState)
 {
 	uint8_t data[] = {
 		CHANGE_STATE,
 		newState
 	};
-	SI4468_DOAPI(data, sizeof(data), NULL, 0);
+	SI4468_DoAPI(data, sizeof(data), NULL, 0);
 }
 
+si446x_state_t SI4468_GetState(void)
+{
+	
+	uint8_t state = getFRR(FRR_C_READ);
+	/*
+	if(state == SI446X_STATE_TX_TUNE)
+	state = SI446X_STATE_TX;
+	else if(state == SI446X_STATE_RX_TUNE)
+	state = SI446X_STATE_RX;
+	else if(state == SI446X_STATE_READY2)
+	state = SI446X_STATE_READY;
+	*/
+	return (si446x_state_t)state;
+}
 
+uint8_t SI4468_Sleep()
+{
+	if(SI4468_GetState() == SI446X_STATE_TX)
+	return ERROR;
+	SI4468_SetState(SI446X_STATE_SLEEP);
+	return SUCCESS;
+}
+
+uint8_t setProperties(uint16_t prop, void* values, uint8_t len){
+	// len must not be greater than 12
+	uint8_t data[16] = {
+		SET_PROPERTY,
+		(uint8_t)(prop>>8),
+		len,
+		(uint8_t)prop
+	};
+	// Copy values into data, starting at index 4
+	memcpy(data + 4, values, len);
+	return SI4468_DoAPI(data, len + 4, NULL, 0);
+}
+
+// Read a bunch of properties
+uint8_t getProperties(uint16_t prop, void* values, uint8_t len)
+{
+	uint8_t data[] = {
+		GET_PROPERTY,
+		(uint8_t)(prop>>8),
+		len,
+		(uint8_t)prop
+	};
+	return SI4468_DoAPI(data, sizeof(data), values, len);
+}
+
+void SI4468_SetTxPower(uint8_t pwr)
+{
+	setProperty(PA_PWR_LVL, pwr);
+}
+
+uint8_t Si446x_TX(void* packet, uint8_t len, uint8_t channel, si446x_state_t onTxFinish)
+{
+	// TODO what happens if len is 0?
+	#if SI4468_FIXED_LENGTH
+	// Stop the unused parameter warning
+	((void)(len));
+	#endif
+
+		if(SI4468_GetState() == SI446X_STATE_TX) // Already transmitting
+			return ERROR;
+
+		// TODO collision avoid or maybe just do collision detect (RSSI jump)
+
+		SI4468_SetState(IDLE_STATE);
+		//clearFIFO();
+		SI4468_Clear_Some_Interrupts(NULL, 0, 0, 0xFF);
+
+			// Load data to FIFO
+		SPI_0_write_block(WRITE_TX_FIFO,1);
+		#if !SI4468_FIXED_LENGTH
+		SPI_0_write_block(len,1);
+		//for(uint8_t i=0;i<len;i++)
+		SPI_0_write_block(((uint8_t*)packet),len);
+		#else
+		SPI_0_write_block(((uint8_t*)packet),SI4468_FIXED_LENGTH,);
+		#endif
+
+		#if !SI446X_FIXED_LENGTH
+		// Set packet length
+		setProperty(PKT_FIELD_2_LENGTH_LOW, len);
+		#endif
+
+		// Begin transmit
+		uint8_t data[] = {
+			START_TX,
+			channel,
+			(uint8_t)(onTxFinish<<4),
+			0,
+			SI4468_FIXED_LENGTH,
+			0,
+			0
+		};
+		SI4468_DoAPI(data, sizeof(data), NULL, 0);
+
+		#if !SI4468_FIXED_LENGTH
+		// Reset packet length back to max for receive mode
+		setProperty(PKT_FIELD_2_LENGTH_LOW, MAX_PACKET_LEN);
+		#endif
+		
+	return SUCCESS;
+}
+
+uint8_t Si446x_RX(uint8_t channel)
+{
+		SI4468_SetState(IDLE_STATE);
+		//clearFIFO();
+		//fix_invalidSync_irq(0);
+		//Si446x_setupCallback(SI446X_CBS_INVALIDSYNC, 0);
+		//setProperty(SI446X_PKT_FIELD_2_LENGTH_LOW, MAX_PACKET_LEN); // TODO ?
+		SI4468_Clear_Some_Interrupts(NULL, 0, 0, 0xFF); // TODO needed?
+
+		// TODO RX timeout to sleep if WUT LDC enabled
+		uint8_t data[] = {
+			START_RX,
+			channel,
+			0,
+			0,
+			SI4468_FIXED_LENGTH,
+			SI446X_STATE_NOCHANGE, // RX Timeout
+			IDLE_STATE, // RX Valid
+			SI446X_STATE_SLEEP // IDLE_STATE // RX Invalid (using SI446X_STATE_SLEEP for the INVALID_SYNC fix)
+		};
+		SI4468_DoAPI(data, sizeof(data), NULL, 0);
+}
 
 //Deprecated methods, need to replace every method below.
 //#################################################################
@@ -124,33 +289,13 @@ uint8_t SI4468_POWER_UP(){
 	SPI_0_write_block(0xC3,sizeof(uint8_t));
 	SPI_0_write_block(0x80,sizeof(uint8_t));
 	*/
-	if(SI4468_WAITCTS()==SUCCESS){
+	if(SI4468_WaitCTS()==SUCCESS){
 		PB2_set_level(true);
 		return SUCCESS;
 	}
 	PB2_set_level(true);
 	return ERROR;
 	
-}
-
-uint8_t SI4468_WAITCTS(){
-	uint8_t bCtsValue;
-	int bErrCnt;
-	bCtsValue = 0;
-	bErrCnt = 0;
-	while (bCtsValue!=0xFF) // Wait until radio IC is ready with the data
-	{
-		PB2_set_level(0); // select radio IC by pulling its nSEL pin low
-		_delay_us(10);
-		bCtsValue=READ_CMD_BUFF;
-		bCtsValue=SPI_0_exchange_byte(bCtsValue); // Read command buffer; send command byte
-		PB2_set_level(1); // If CTS is not 0xFF, put NSS high and stay in waiting
-		if (++bErrCnt > MAX_CTS)
-		{
-			return ERROR; // Error handling; if wrong CTS reads exceeds a limit
-		}
-	}
-	return SUCCESS;
 }
 
 uint8_t SI4468_GetResponse(uint8_t *pbRespData,uint8_t bRespLength) //Get response from the chip (used after a command)
@@ -197,24 +342,6 @@ uint8_t SI4468_NOP(){
 	
 }
 
-uint8_t SI4468_GPIO_PIN_CFG(){
-	PB2_set_level(false);
-	SPI_0_write_block(GPIO_PIN_CFG,sizeof(GPIO_PIN_CFG));
-	SPI_0_write_block(0x13,sizeof(uint8_t));
-	SPI_0_write_block(0x08,sizeof(uint8_t));
-	SPI_0_write_block(0x20,sizeof(uint8_t));
-	SPI_0_write_block(0x21,sizeof(uint8_t));
-	SPI_0_write_block(0x00,sizeof(uint8_t));
-	SPI_0_write_block(0x00,sizeof(uint8_t));
-	SPI_0_write_block(0x00,sizeof(uint8_t));
-	if(SI4468_WAITCTS()==SUCCESS || PD4_get_level()){
-		PB2_set_level(true);
-		return SUCCESS;
-	}
-	PB2_set_level(true);
-	return ERROR;
-}
-
 void SI4468_PART_INFO(){
 	SPI_0_write_block(PART_INFO,sizeof(PART_INFO));
 	char * a;
@@ -240,7 +367,7 @@ uint8_t SI4468_GET_CHIP_STATUS(){
 	SPI_0_write_block(0x00,sizeof(uint8_t));
 	SPI_0_write_block(0x00,sizeof(uint8_t));
 	uint8_t * databuffer;
-	if(SI4468_WAITCTS()==SUCCESS || PD4_get_level()){
+	if(SI4468_WaitCTS()==SUCCESS || PD4_get_level()){
 		SPI_0_read_block(databuffer,3);//clear read buffer
 		PB2_set_level(true);
 		//USART_0_write_block(databuffer,3);
@@ -268,19 +395,6 @@ void SI4468_GET_PH_STATUS(){
 	a=NULL;
 }
 
-void SI4468_GET_PROPERTY(uint8_t group, uint8_t numprops, uint8_t startprops){
-	SPI_0_write_block(GET_PROPERTY,sizeof(GET_PROPERTY));
-	SPI_0_write_block(group,sizeof(group));
-	SPI_0_write_block(numprops,sizeof(numprops));
-	SPI_0_write_block(startprops,sizeof(startprops));
-	char * a;
-	SPI_0_read_block(a,sizeof(uint8_t)*(numprops+1));
-	//USART_0_write_block(a,sizeof(uint8_t)*(numprops+1));
-	//USART_0_write('\n');
-	free(a);
-	a=NULL;
-}
-
 void SI4468_START_TX(uint8_t channel, uint8_t TX_COMPLETE_STATE, bool RETRANSMIT,bool START){
 	
 	PB2_set_level(false);
@@ -290,7 +404,7 @@ void SI4468_START_TX(uint8_t channel, uint8_t TX_COMPLETE_STATE, bool RETRANSMIT
 	SPI_0_write_block(param2,sizeof(uint8_t));
 	SPI_0_write_block(0,sizeof(uint8_t));
 	SPI_0_write_block(0,sizeof(uint8_t));
-	if(SI4468_WAITCTS())
+	if(SI4468_WaitCTS())
 		USART_0_write(SUCCESS);
 	PB2_set_level(true);
 }
@@ -328,78 +442,19 @@ uint8_t SI4468_WriteTxDataBuffer(uint8_t * data , uint8_t size) // Write Tx FIFO
 	PB2_set_level(0); // select radio IC by pulling its nSEL pin low
 	SPI_0_write_block(WRITE_TX_FIFO,sizeof(WRITE_TX_FIFO)); // Send Rx read command
 	SPI_0_write_block(data,size);
-	if(SI4468_WAITCTS()==SUCCESS || PD4_get_level()){
+	if(SI4468_WaitCTS()==SUCCESS || PD4_get_level()){
 		PB2_set_level(true);
 		return SUCCESS;
 	}
 	PB2_set_level(1);
 }
 
-uint8_t SI4468_SET_PROPERTY(uint8_t group, uint8_t numprops, uint8_t startprops,const uint8_t * params, uint8_t size){
-	
-	PB2_set_level(0); // select radio IC by pulling its nSEL pin low
-	SPI_0_write_block(SET_PROPERTY,sizeof(SET_PROPERTY)); // Send Rx read command
-	SPI_0_write_block(group,sizeof(group));
-	SPI_0_write_block(numprops,sizeof(numprops));
-	SPI_0_write_block(startprops,sizeof(startprops));
-	for(uint8_t i = 0;i<size;i++)
-		SPI_0_write_block(params[i],sizeof(uint8_t));
-	if(SI4468_WAITCTS()==SUCCESS){
-		PB2_set_level(true);
-		return SUCCESS;
-	}
-	PB2_set_level(true);
-	return ERROR;
-}
-
-uint8_t SI4468_CHANGE_STATE(uint8_t state){
-	PB2_set_level(0); // select radio IC by pulling its nSEL pin low
-	SPI_0_write_block(CHANGE_STATE,sizeof(CHANGE_STATE)); // Send Rx read command
-	SPI_0_write_block(state&0x0F,sizeof(state));
-	if(SI4468_WAITCTS()==SUCCESS || PD4_get_level()){
-		PB2_set_level(true);
-		return SUCCESS;
-	}
-	PB2_set_level(true);
-	return ERROR;
-}
-
-uint8_t SI4468_GET_INT_STATUS(bool debug){
-	PB2_set_level(false);
-	SPI_0_write_block(GET_INT_STATUS,sizeof(GET_INT_STATUS));
-	//clearing interrupt
-	SPI_0_write_block(0x00,sizeof(uint8_t));
-	SPI_0_write_block(0x00,sizeof(uint8_t));
-	SPI_0_write_block(0x00,sizeof(uint8_t));
-	uint8_t * databuffer;
-	uint8_t TX_STATES,RX_STATES;
-	if(SI4468_WAITCTS()==SUCCESS){
-		SPI_0_read_block(databuffer,8);//clear read buffer
-		PB2_set_level(true);
-		
-		if(debug){
-			//USART_0_write_block(databuffer,8);
-			TX_STATES=(databuffer+4);
-			RX_STATES=(databuffer+6);
-			USART_0_write(0x00);
-			USART_0_write(TX_STATES);
-			USART_0_write(0xFF);
-			USART_0_write(RX_STATES);
-		}
-		free(databuffer);
-		databuffer=NULL;
-		return SUCCESS;
-	}
-	databuffer=NULL;
-	PB2_set_level(true);
-	return ERROR;
-}
 
 uint8_t SI4468_REQUEST_DEVICE_STATE(){
 	PB2_set_level(0);
 	SPI_0_write_block(REQUEST_DEVICE_STATE,sizeof(REQUEST_DEVICE_STATE));
 	uint8_t *data = (uint8_t*)malloc(2);
-	if(SI4468_WAITCTS()==SUCCESS){
+	if(SI4468_WaitCTS()==SUCCESS){
 		SPI_0_read_block(data,2);
 		PB2_set_level(1);
 		free(data);
