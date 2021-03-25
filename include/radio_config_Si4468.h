@@ -52,7 +52,7 @@
 // Command:                  RF_GPIO_PIN_CFG
 // Description:              Configures the GPIO pins.
 */
-#define RF_GPIO_PIN_CFG 0x13, 0x13, 0x08, 0x20, 0x21, 0x14, 0x00, 0x00
+#define RF_GPIO_PIN_CFG 0x13, 0x13, 0x08, 0x20, 0x21, 0x00, 0x00, 0x00
 
 /*
 // Set properties:           RF_GLOBAL_XO_TUNE_2

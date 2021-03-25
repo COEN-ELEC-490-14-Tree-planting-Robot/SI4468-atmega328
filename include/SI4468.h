@@ -80,8 +80,9 @@ inline uint8_t setProperty(uint16_t prop, uint8_t value){return setProperties(pr
 // Read a single property
 uint8_t getProperties(uint16_t prop, void* values, uint8_t len);
 inline uint8_t getProperty(uint16_t prop) { uint8_t val; getProperties(prop, &val, 1); return val;}
-uint8_t Si446x_TX(void* packet, uint8_t len, uint8_t channel, si446x_state_t onTxFinish);
-uint8_t Si446x_RX(uint8_t channel);
+uint8_t SI4468_TX(void* packet, uint8_t len, uint8_t channel, si446x_state_t onTxFinish);
+uint8_t SI4468_RX(uint8_t channel);
+void SI4468_Read(void* buff, uint8_t len);
 
 //Deprecated functions,Need change
 //######################################################################################################################

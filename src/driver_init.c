@@ -75,12 +75,12 @@ void SPI_0_initialization(void)
 	PB2_set_level(true);
 	
 	//PD2-NIRQ
-	/*
+	
 	PD2_set_dir(PORT_DIR_IN);
 	PD2_set_pull_mode(PORT_PULL_OFF);
 	EIMSK = (1<<INT0);
-	EICRA = (0<<ISC01)|(0<<ISC00);
-	*/
+	EICRA = (1<<ISC01)|(0<<ISC00);
+	
 	
 	//PD4-GP1
 	PD4_set_dir(PORT_DIR_IN);
@@ -90,17 +90,15 @@ void SPI_0_initialization(void)
 	PD5_set_dir(PORT_DIR_OUT);
 	PD5_set_level(false);
 	
-	/*
+	
 	//PD6-GPIO2 TX_STATE
 	PD6_set_dir(PORT_DIR_IN);
 	PD6_set_pull_mode(PORT_PULL_OFF);
-	PD6_set_level(false);
 	
 	//PD7-GPIO3 RX_STATE
 	PD7_set_dir(PORT_DIR_IN);
 	PD7_set_pull_mode(PORT_PULL_OFF);
-	PD7_set_level(false);
-	*/
+	
 	SPI_0_init();
 	
 }

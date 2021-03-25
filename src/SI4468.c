@@ -37,7 +37,7 @@ uint8_t SI4468_DoAPI(void* data, uint8_t len, void* out, uint8_t outLen){
 	//while( SI4468_WAITCTS()==ERROR && !--timeout )
 	//_delay_us(10);
 	if( SI4468_WaitCTS() == SUCCESS){
-		SPI_0_write_block((uint8_t*)data,len);
+		//SPI_0_write_block((uint8_t*)data,len);
 		if( ((uint8_t*)data)[0] == IRCAL && waitForResponse(NULL,0,0) == SUCCESS )
 		return SUCCESS;
 		else if(out != NULL && waitForResponse(out,outLen,1) == SUCCESS )
@@ -75,10 +75,14 @@ uint8_t getResponse(void* buff, uint8_t len)
 	cts = SPI_0_exchange_byte(cts);
 	if(cts){
 		// Get response data
+		/*
 		for(uint8_t i = 0; i<len; i++){
 			( (uint8_t*)buff )[i] = 0xFF;
 			( (uint8_t*)buff )[i] = SPI_0_exchange_byte( ((uint8_t*)buff)[i] );
+			USART_0_write(( (uint8_t*)buff )[i]);
 		}
+		*/
+		SPI_0_exchange_block(buff,len);
 	}
 	return cts;
 }
@@ -87,15 +91,22 @@ uint8_t getResponse(void* buff, uint8_t len)
 uint8_t getFRR(uint8_t reg)
 {
 	uint8_t frr = 0;
-	SPI_0_write_block(reg,1);
-	frr = SPI_0_exchange_byte(frr);
+	//SPI_0_write_block(reg,1);
+	frr = SPI_0_exchange_byte(reg);
+	USART_0_write('a');
+	USART_0_write(frr);
 	return frr;
 }
 
 uint8_t SI4468_Clear_All_Interrupt(void* buff)
 {
 	uint8_t data = GET_INT_STATUS;
-	SI4468_DoAPI(&data, sizeof(data), buff, 8);
+	//USART_0_write(0x02);
+	//USART_0_write(sizeof(buff));
+	uint8_t result = SI4468_DoAPI(&data, sizeof(data), buff, 9);
+	
+	//USART_0_write_block(buff,sizeof(buff));
+	return result;
 }
 
 uint8_t SI4468_Clear_Some_Interrupts(void* buff, uint8_t clearPH, uint8_t clearMODEM, uint8_t clearCHIP)
@@ -110,18 +121,18 @@ uint8_t SI4468_Clear_Some_Interrupts(void* buff, uint8_t clearPH, uint8_t clearM
 }
 
 uint8_t SI4468_INIT(){
-	PD5_set_level(true);
-	_delay_ms(10);
+	//PD5_set_level(true);
+	//_delay_ms(10);
 	//USART_0_write(PD5_get_level());
 	
-	PD5_set_level(false);
-	_delay_ms(6);
+	//PD5_set_level(false);
+	//_delay_ms(6);
 	
 	uint8_t buff[17];
 	for(uint16_t i = 0, temp = 0; i < sizeof(config)-1; ++i){
 		memcpy(buff, &config[i], sizeof(buff));
 		temp = buff[0];
-		SI4468_DoAPI(&buff[1], buff[0], NULL, 0);
+		//USART_0_write(SI4468_DoAPI(&buff[1], buff[0], NULL, 0));
 		i += temp;
 	}
 	
@@ -149,6 +160,7 @@ si446x_state_t SI4468_GetState(void)
 	else if(state == SI446X_STATE_READY2)
 	state = SI446X_STATE_READY;
 	*/
+	USART_0_write(state);
 	return (si446x_state_t)state;
 }
 
@@ -190,14 +202,13 @@ void SI4468_SetTxPower(uint8_t pwr)
 	setProperty(PA_PWR_LVL, pwr);
 }
 
-uint8_t Si446x_TX(void* packet, uint8_t len, uint8_t channel, si446x_state_t onTxFinish)
+uint8_t SI4468_TX(void* packet, uint8_t len, uint8_t channel, si446x_state_t onTxFinish)
 {
 	// TODO what happens if len is 0?
 	#if SI4468_FIXED_LENGTH
 	// Stop the unused parameter warning
 	((void)(len));
 	#endif
-
 		if(SI4468_GetState() == SI446X_STATE_TX) // Already transmitting
 			return ERROR;
 
@@ -242,7 +253,7 @@ uint8_t Si446x_TX(void* packet, uint8_t len, uint8_t channel, si446x_state_t onT
 	return SUCCESS;
 }
 
-uint8_t Si446x_RX(uint8_t channel)
+uint8_t SI4468_RX(uint8_t channel)
 {
 		SI4468_SetState(IDLE_STATE);
 		//clearFIFO();
@@ -262,7 +273,13 @@ uint8_t Si446x_RX(uint8_t channel)
 			IDLE_STATE, // RX Valid
 			SI446X_STATE_SLEEP // IDLE_STATE // RX Invalid (using SI446X_STATE_SLEEP for the INVALID_SYNC fix)
 		};
-		SI4468_DoAPI(data, sizeof(data), NULL, 0);
+		return SI4468_DoAPI(data, sizeof(data), NULL, 0);
+}
+
+void SI4468_Read(void* buff, uint8_t len){
+	SPI_0_write_block(READ_RX_FIFO,1);
+	for(uint8_t i=0;i<len;i++)
+		((uint8_t*)buff)[i] = SPI_0_exchange_byte(0xFF);
 }
 
 //Deprecated methods, need to replace every method below.

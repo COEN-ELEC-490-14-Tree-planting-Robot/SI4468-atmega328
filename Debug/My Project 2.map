@@ -96,9 +96,9 @@ Discarded input sections
  .data          0x00000000        0x0 main.o
  .bss           0x00000000        0x0 main.o
  .text.main_turtlebot
-                0x00000000       0x1c main.o
+                0x00000000       0x2a main.o
  .text.USART1_Receive
-                0x00000000       0x1c main.o
+                0x00000000       0x22 main.o
  .text.USART1_Transmit
                 0x00000000       0x2a main.o
  .text          0x00000000        0x0 src/driver_init.o
@@ -110,10 +110,9 @@ Discarded input sections
  .text          0x00000000        0x0 src/SI4468.o
  .data          0x00000000        0x0 src/SI4468.o
  .bss           0x00000000        0x0 src/SI4468.o
- .text.SI4468_Clear_Some_Interrupts
-                0x00000000       0x32 src/SI4468.o
- .text.SI4468_SetState
-                0x00000000       0x2a src/SI4468.o
+ .text.getFRR   0x00000000       0x1e src/SI4468.o
+ .text.SI4468_GetState
+                0x00000000       0x16 src/SI4468.o
  .text.SI4468_Sleep
                 0x00000000       0x16 src/SI4468.o
  .text.setProperties
@@ -122,10 +121,10 @@ Discarded input sections
                 0x00000000       0x32 src/SI4468.o
  .text.SI4468_SetTxPower
                 0x00000000       0x24 src/SI4468.o
- .text.Si446x_TX
+ .text.SI4468_TX
                 0x00000000       0xcc src/SI4468.o
- .text.Si446x_RX
-                0x00000000       0x66 src/SI4468.o
+ .text.SI4468_Read
+                0x00000000       0x42 src/SI4468.o
  .rodata        0x00000000        0x7 src/SI4468.o
  .text.SI4468_POWER_UP
                 0x00000000       0x68 src/SI4468.o
@@ -154,8 +153,6 @@ Discarded input sections
  .text          0x00000000        0x0 src/spi_basic.o
  .data          0x00000000        0x0 src/spi_basic.o
  .bss           0x00000000        0x0 src/spi_basic.o
- .text.SI4468_set_nSEL
-                0x00000000       0x14 src/spi_basic.o
  .text.SPI_0_enable
                 0x00000000        0x8 src/spi_basic.o
  .text.SPI_0_disable
@@ -170,8 +167,6 @@ Discarded input sections
                 0x00000000        0xe src/spi_basic.o
  .text.SPI_0_status_done
                 0x00000000        0xe src/spi_basic.o
- .text.SPI_0_exchange_block
-                0x00000000       0x18 src/spi_basic.o
  .text.SPI_0_write_block2
                 0x00000000       0x18 src/spi_basic.o
  .text.SPI_0_read_block
@@ -199,8 +194,6 @@ Discarded input sections
                 0x00000000       0x14 src/usart_basic.o
  .text.USART_0_read
                 0x00000000        0xe src/usart_basic.o
- .text.USART_0_write_block
-                0x00000000       0x2c src/usart_basic.o
  .text.USART_0_write_block_try
                 0x00000000       0x2c src/usart_basic.o
  .text          0x00000000        0x0 d:/atmel/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
@@ -474,7 +467,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0x5b2
+.text           0x00000000      0x708
  *(.vectors)
  .vectors       0x00000000       0x68 D:/Atmel/7.0/Packs/atmel/ATmega_DFP/1.6.364/gcc/dev/atmega328p/avr5/crtatmega328p.o
                 0x00000000                __vector_default
@@ -534,7 +527,6 @@ END GROUP
  *(.text)
  .text          0x000000a2        0x4 D:/Atmel/7.0/Packs/atmel/ATmega_DFP/1.6.364/gcc/dev/atmega328p/avr5/crtatmega328p.o
                 0x000000a2                __vector_22
-                0x000000a2                __vector_1
                 0x000000a2                __vector_24
                 0x000000a2                __vector_12
                 0x000000a2                __bad_interrupt
@@ -562,74 +554,87 @@ END GROUP
                 0x000000a6        0x6 atmel_start.o
                 0x000000a6                atmel_start_init
  .text.main_station
-                0x000000ac       0x1c main.o
+                0x000000ac       0x2c main.o
                 0x000000ac                main_station
- .text.main     0x000000c8       0x1e main.o
-                0x000000c8                main
+ .text.main     0x000000d8       0x1e main.o
+                0x000000d8                main
  .text.__vector_18
-                0x000000e6       0x4c main.o
-                0x000000e6                __vector_18
+                0x000000f6       0x6a main.o
+                0x000000f6                __vector_18
  .text.__vector_19
-                0x00000132       0x54 main.o
-                0x00000132                __vector_19
+                0x00000160       0x54 main.o
+                0x00000160                __vector_19
+ .text.__vector_1
+                0x000001b4       0x86 main.o
+                0x000001b4                __vector_1
  .text.SPI_0_initialization
-                0x00000186       0x4e src/driver_init.o
-                0x00000186                SPI_0_initialization
+                0x0000023a       0x7c src/driver_init.o
+                0x0000023a                SPI_0_initialization
  .text.USART_0_initialization
-                0x000001d4       0x1e src/driver_init.o
-                0x000001d4                USART_0_initialization
+                0x000002b6       0x1e src/driver_init.o
+                0x000002b6                USART_0_initialization
  .text.system_init
-                0x000001f2       0x3e src/driver_init.o
-                0x000001f2                system_init
+                0x000002d4       0x3e src/driver_init.o
+                0x000002d4                system_init
  .text.protected_write_io
-                0x00000230        0xe src/protected_io.o
-                0x00000230                protected_write_io
+                0x00000312        0xe src/protected_io.o
+                0x00000312                protected_write_io
  .text.SI4468_WaitCTS
-                0x0000023e       0x40 src/SI4468.o
-                0x0000023e                SI4468_WaitCTS
+                0x00000320       0x40 src/SI4468.o
+                0x00000320                SI4468_WaitCTS
  .text.getResponse
-                0x0000027e       0x5a src/SI4468.o
-                0x0000027e                getResponse
+                0x00000360       0x36 src/SI4468.o
+                0x00000360                getResponse
  .text.waitForResponse
-                0x000002d8       0x48 src/SI4468.o
-                0x000002d8                waitForResponse
+                0x00000396       0x48 src/SI4468.o
+                0x00000396                waitForResponse
  .text.SI4468_DoAPI
-                0x00000320       0x76 src/SI4468.o
-                0x00000320                SI4468_DoAPI
- .text.getFRR   0x00000396       0x10 src/SI4468.o
-                0x00000396                getFRR
+                0x000003de       0x68 src/SI4468.o
+                0x000003de                SI4468_DoAPI
  .text.SI4468_Clear_All_Interrupt
-                0x000003a6       0x24 src/SI4468.o
-                0x000003a6                SI4468_Clear_All_Interrupt
+                0x00000446       0x24 src/SI4468.o
+                0x00000446                SI4468_Clear_All_Interrupt
+ .text.SI4468_Clear_Some_Interrupts
+                0x0000046a       0x32 src/SI4468.o
+                0x0000046a                SI4468_Clear_Some_Interrupts
  .text.SI4468_INIT
-                0x000003ca       0xa0 src/SI4468.o
-                0x000003ca                SI4468_INIT
- .text.SI4468_GetState
-                0x0000046a        0x8 src/SI4468.o
-                0x0000046a                SI4468_GetState
+                0x0000049c       0x58 src/SI4468.o
+                0x0000049c                SI4468_INIT
+ .text.SI4468_SetState
+                0x000004f4       0x2a src/SI4468.o
+                0x000004f4                SI4468_SetState
+ .text.SI4468_RX
+                0x0000051e       0x66 src/SI4468.o
+                0x0000051e                SI4468_RX
  .text.SPI_0_init
-                0x00000472       0x1a src/spi_basic.o
-                0x00000472                SPI_0_init
+                0x00000584       0x1a src/spi_basic.o
+                0x00000584                SPI_0_init
  .text.__vector_17
-                0x0000048c       0x9c src/spi_basic.o
-                0x0000048c                __vector_17
+                0x0000059e       0x9c src/spi_basic.o
+                0x0000059e                __vector_17
  .text.SPI_0_exchange_byte
-                0x00000528       0x38 src/spi_basic.o
-                0x00000528                SPI_0_exchange_byte
+                0x0000063a       0x38 src/spi_basic.o
+                0x0000063a                SPI_0_exchange_byte
+ .text.SPI_0_exchange_block
+                0x00000672       0x18 src/spi_basic.o
+                0x00000672                SPI_0_exchange_block
  .text.SPI_0_write_block
-                0x00000560       0x18 src/spi_basic.o
-                0x00000560                SPI_0_write_block
+                0x0000068a       0x18 src/spi_basic.o
+                0x0000068a                SPI_0_write_block
  .text.USART_0_init
-                0x00000578       0x28 src/usart_basic.o
-                0x00000578                USART_0_init
+                0x000006a2       0x28 src/usart_basic.o
+                0x000006a2                USART_0_init
  .text.USART_0_write
-                0x000005a0        0xe src/usart_basic.o
-                0x000005a0                USART_0_write
-                0x000005ae                . = ALIGN (0x2)
+                0x000006ca        0xe src/usart_basic.o
+                0x000006ca                USART_0_write
+ .text.USART_0_write_block
+                0x000006d8       0x2c src/usart_basic.o
+                0x000006d8                USART_0_write_block
+                0x00000704                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x000005ae        0x0 d:/atmel/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
-                0x000005ae                _exit
-                0x000005ae                exit
+ .fini9         0x00000704        0x0 d:/atmel/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
+                0x00000704                _exit
+                0x00000704                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -648,51 +653,58 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x000005ae        0x4 d:/atmel/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
+ .fini0         0x00000704        0x4 d:/atmel/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
  *(.fini0)
-                0x000005b2                _etext = .
+                0x00000708                _etext = .
 
-.data           0x00800100      0x18e load address 0x000005b2
+.data           0x00800100      0x1a6 load address 0x00000708
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
  *(.gnu.linkonce.d*)
  *(.rodata)
  *(.rodata*)
+ .rodata.str1.1
+                0x00800100       0x17 main.o
  .rodata.config
-                0x00800100      0x18e src/SI4468.o
+                0x00800117      0x18e src/SI4468.o
  *(.gnu.linkonce.r*)
-                0x0080028e                . = ALIGN (0x2)
-                0x0080028e                _edata = .
-                0x0080028e                PROVIDE (__data_end, .)
+                0x008002a6                . = ALIGN (0x2)
+ *fill*         0x008002a5        0x1 
+                0x008002a6                _edata = .
+                0x008002a6                PROVIDE (__data_end, .)
 
-.bss            0x0080028e       0x4b
-                0x0080028e                PROVIDE (__bss_start, .)
+.bss            0x008002a6       0x94
+                0x008002a6                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
+ .bss.Interrupt_vector
+                0x008002a6        0x9 main.o
  .bss.USART_TxTail
-                0x0080028e        0x1 main.o
+                0x008002af        0x1 main.o
  .bss.USART_TxHead
-                0x0080028f        0x1 main.o
+                0x008002b0        0x1 main.o
  .bss.USART_TxBuf
-                0x00800290       0x40 main.o
+                0x008002b1       0x40 main.o
  .bss.USART_RxTail
-                0x008002d0        0x1 main.o
+                0x008002f1        0x1 main.o
  .bss.USART_RxHead
-                0x008002d1        0x1 main.o
+                0x008002f2        0x1 main.o
+ .bss.USART_RxBuf
+                0x008002f3       0x40 main.o
  .bss.SPI_0_desc
-                0x008002d2        0x7 src/spi_basic.o
+                0x00800333        0x7 src/spi_basic.o
  *(COMMON)
-                0x008002d9                PROVIDE (__bss_end, .)
-                0x000005b2                __data_load_start = LOADADDR (.data)
-                0x00000740                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x0080033a                PROVIDE (__bss_end, .)
+                0x00000708                __data_load_start = LOADADDR (.data)
+                0x000008ae                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x008002d9        0x0
+.noinit         0x0080033a        0x0
                 [!provide]                PROVIDE (__noinit_start, .)
  *(.noinit*)
                 [!provide]                PROVIDE (__noinit_end, .)
-                0x008002d9                _end = .
-                0x008002d9                PROVIDE (__heap_start, .)
+                0x0080033a                _end = .
+                0x0080033a                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -761,91 +773,91 @@ END GROUP
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges  0x00000000      0x2d0
+.debug_aranges  0x00000000      0x2d8
  *(.debug_aranges)
  .debug_aranges
                 0x00000000       0x20 atmel_start.o
  .debug_aranges
-                0x00000020       0x50 main.o
+                0x00000020       0x58 main.o
  .debug_aranges
-                0x00000070       0x30 src/driver_init.o
+                0x00000078       0x30 src/driver_init.o
  .debug_aranges
-                0x000000a0       0x20 src/protected_io.o
+                0x000000a8       0x20 src/protected_io.o
  .debug_aranges
-                0x000000c0       0xf8 src/SI4468.o
+                0x000000c8      0x100 src/SI4468.o
  .debug_aranges
-                0x000001b8       0x98 src/spi_basic.o
+                0x000001c8       0x90 src/spi_basic.o
  .debug_aranges
-                0x00000250       0x80 src/usart_basic.o
+                0x00000258       0x80 src/usart_basic.o
 
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x3e72
+.debug_info     0x00000000     0x40f9
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000      0x5f4 D:/Atmel/7.0/Packs/atmel/ATmega_DFP/1.6.364/gcc/dev/atmega328p/avr5/crtatmega328p.o
  .debug_info    0x000005f4      0x25b atmel_start.o
- .debug_info    0x0000084f      0x51c main.o
- .debug_info    0x00000d6b      0xad7 src/driver_init.o
- .debug_info    0x00001842       0x86 src/protected_io.o
- .debug_info    0x000018c8     0x1b7a src/SI4468.o
- .debug_info    0x00003442      0x613 src/spi_basic.o
- .debug_info    0x00003a55      0x41d src/usart_basic.o
+ .debug_info    0x0000084f      0x705 main.o
+ .debug_info    0x00000f54      0xcf9 src/driver_init.o
+ .debug_info    0x00001c4d       0x86 src/protected_io.o
+ .debug_info    0x00001cd3     0x1a9d src/SI4468.o
+ .debug_info    0x00003770      0x56c src/spi_basic.o
+ .debug_info    0x00003cdc      0x41d src/usart_basic.o
 
-.debug_abbrev   0x00000000     0x111c
+.debug_abbrev   0x00000000     0x1159
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0x5a2 D:/Atmel/7.0/Packs/atmel/ATmega_DFP/1.6.364/gcc/dev/atmega328p/avr5/crtatmega328p.o
  .debug_abbrev  0x000005a2       0x98 atmel_start.o
- .debug_abbrev  0x0000063a      0x1aa main.o
- .debug_abbrev  0x000007e4      0x175 src/driver_init.o
- .debug_abbrev  0x00000959       0x14 src/protected_io.o
- .debug_abbrev  0x0000096d      0x44f src/SI4468.o
- .debug_abbrev  0x00000dbc      0x21d src/spi_basic.o
- .debug_abbrev  0x00000fd9      0x143 src/usart_basic.o
+ .debug_abbrev  0x0000063a      0x247 main.o
+ .debug_abbrev  0x00000881      0x175 src/driver_init.o
+ .debug_abbrev  0x000009f6       0x14 src/protected_io.o
+ .debug_abbrev  0x00000a0a      0x432 src/SI4468.o
+ .debug_abbrev  0x00000e3c      0x1da src/spi_basic.o
+ .debug_abbrev  0x00001016      0x143 src/usart_basic.o
 
-.debug_line     0x00000000     0x14ab
+.debug_line     0x00000000     0x1553
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000      0x134 D:/Atmel/7.0/Packs/atmel/ATmega_DFP/1.6.364/gcc/dev/atmega328p/avr5/crtatmega328p.o
  .debug_line    0x00000134       0xb3 atmel_start.o
- .debug_line    0x000001e7      0x23d main.o
- .debug_line    0x00000424      0x1fa src/driver_init.o
- .debug_line    0x0000061e       0x67 src/protected_io.o
- .debug_line    0x00000685      0x877 src/SI4468.o
- .debug_line    0x00000efc      0x353 src/spi_basic.o
- .debug_line    0x0000124f      0x25c src/usart_basic.o
+ .debug_line    0x000001e7      0x301 main.o
+ .debug_line    0x000004e8      0x230 src/driver_init.o
+ .debug_line    0x00000718       0x67 src/protected_io.o
+ .debug_line    0x0000077f      0x86b src/SI4468.o
+ .debug_line    0x00000fea      0x30d src/spi_basic.o
+ .debug_line    0x000012f7      0x25c src/usart_basic.o
 
-.debug_frame    0x00000000      0x770
+.debug_frame    0x00000000      0x7d8
  *(.debug_frame)
  .debug_frame   0x00000000       0x24 atmel_start.o
- .debug_frame   0x00000024       0xec main.o
- .debug_frame   0x00000110       0x44 src/driver_init.o
- .debug_frame   0x00000154      0x3a4 src/SI4468.o
- .debug_frame   0x000004f8      0x16c src/spi_basic.o
- .debug_frame   0x00000664      0x10c src/usart_basic.o
+ .debug_frame   0x00000024      0x14c main.o
+ .debug_frame   0x00000170       0x44 src/driver_init.o
+ .debug_frame   0x000001b4      0x3bc src/SI4468.o
+ .debug_frame   0x00000570      0x15c src/spi_basic.o
+ .debug_frame   0x000006cc      0x10c src/usart_basic.o
 
-.debug_str      0x00000000      0xe11
+.debug_str      0x00000000      0xea8
  *(.debug_str)
  .debug_str     0x00000000      0x208 D:/Atmel/7.0/Packs/atmel/ATmega_DFP/1.6.364/gcc/dev/atmega328p/avr5/crtatmega328p.o
  .debug_str     0x00000208      0x170 atmel_start.o
                                 0x1a4 (size before relaxing)
- .debug_str     0x00000378      0x147 main.o
-                                0x2d1 (size before relaxing)
- .debug_str     0x000004bf      0x278 src/driver_init.o
-                                0x418 (size before relaxing)
- .debug_str     0x00000737      0x441 src/SI4468.o
-                                0x689 (size before relaxing)
- .debug_str     0x00000b78      0x1bc src/spi_basic.o
-                                0x3cc (size before relaxing)
- .debug_str     0x00000d34       0xdd src/usart_basic.o
+ .debug_str     0x00000378      0x27e main.o
+                                0x408 (size before relaxing)
+ .debug_str     0x000005f6      0x2cc src/driver_init.o
+                                0x472 (size before relaxing)
+ .debug_str     0x000008c2      0x376 src/SI4468.o
+                                0x680 (size before relaxing)
+ .debug_str     0x00000c38      0x1a7 src/spi_basic.o
+                                0x394 (size before relaxing)
+ .debug_str     0x00000ddf       0xc9 src/usart_basic.o
                                 0x288 (size before relaxing)
 
-.debug_loc      0x00000000     0x1dc0
+.debug_loc      0x00000000     0x1f3f
  *(.debug_loc)
- .debug_loc     0x00000000      0x1a6 main.o
- .debug_loc     0x000001a6      0x2bf src/driver_init.o
- .debug_loc     0x00000465     0x14b9 src/SI4468.o
- .debug_loc     0x0000191e      0x30e src/spi_basic.o
- .debug_loc     0x00001c2c      0x194 src/usart_basic.o
+ .debug_loc     0x00000000      0x2f4 main.o
+ .debug_loc     0x000002f4      0x3af src/driver_init.o
+ .debug_loc     0x000006a3     0x14bc src/SI4468.o
+ .debug_loc     0x00001b5f      0x24c src/spi_basic.o
+ .debug_loc     0x00001dab      0x194 src/usart_basic.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -865,14 +877,14 @@ END GROUP
 .debug_pubtypes
  *(.debug_pubtypes)
 
-.debug_ranges   0x00000000      0x268
+.debug_ranges   0x00000000      0x258
  *(.debug_ranges)
  .debug_ranges  0x00000000       0x10 atmel_start.o
- .debug_ranges  0x00000010       0x40 main.o
- .debug_ranges  0x00000050       0x20 src/driver_init.o
- .debug_ranges  0x00000070      0x100 src/SI4468.o
- .debug_ranges  0x00000170       0x88 src/spi_basic.o
- .debug_ranges  0x000001f8       0x70 src/usart_basic.o
+ .debug_ranges  0x00000010       0x48 main.o
+ .debug_ranges  0x00000058       0x20 src/driver_init.o
+ .debug_ranges  0x00000078       0xf0 src/SI4468.o
+ .debug_ranges  0x00000168       0x80 src/spi_basic.o
+ .debug_ranges  0x000001e8       0x70 src/usart_basic.o
 
 .debug_macro
  *(.debug_macro)

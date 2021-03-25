@@ -49,9 +49,6 @@ typedef struct SPI_0_descriptor_s {
 
 static SPI_0_descriptor_t SPI_0_desc;
 
-void SI4468_set_nSEL(bool level){
-	PB2_set_level(level);
-}
 
 /**
  * \brief Initialize SPI interface
