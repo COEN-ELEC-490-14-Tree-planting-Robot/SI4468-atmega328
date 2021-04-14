@@ -20,6 +20,11 @@ static inline void PB2_set_level(const bool level)
 	PORTB_set_pin_level(2, level);
 }
 
+static inline bool PB2_get_level()
+{
+	PORTB_get_pin_level(2);
+}
+
 /**
  * \brief Set PB3 pull mode
  *

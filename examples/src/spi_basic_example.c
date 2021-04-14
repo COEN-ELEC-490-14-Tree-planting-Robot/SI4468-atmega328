@@ -32,18 +32,20 @@
 #include <spi_basic.h>
 #include <atomic.h>
 
-static uint8_t buffer[16] = "data";
+static uint8_t buffer[16] = "SB";
 
 static void drive_slave_select_low(void);
 static void drive_slave_select_high(void);
 
 static void drive_slave_select_low()
 {
+	PB2_set_level(0);
 	// Control GPIO to drive SS_bar low
 }
 
 static void drive_slave_select_high()
 {
+	PB2_set_level(1);
 	// Control GPIO to drive SS_bar high
 }
 
@@ -65,9 +67,9 @@ uint8_t SPI_0_test_spi_basic(void)
 		; // Wait for the transfer to complete
 	
 	// Check that the correct data was received
+	USART_0_write_block(buffer,sizeof(buffer));
 	if (strncmp((char *)buffer, "data", strlen("data")))
 		return 0; // ERROR: Wrong data received
-	USART_0_write("here");
 	// If we get here, everything was OK
 	return 1;
 }

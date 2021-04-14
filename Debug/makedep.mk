@@ -12,11 +12,17 @@ examples\src\usart_basic_example.c
 
 main.c
 
+ping_client.c
+
+ping_server.c
+
 src\driver_init.c
 
 src\protected_io.S
 
-src\SI4468.c
+src\Si446x.c
+
+src\Si446x_spi.c
 
 src\spi_basic.c
 

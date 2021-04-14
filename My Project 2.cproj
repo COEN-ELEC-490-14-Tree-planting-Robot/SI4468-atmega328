@@ -290,10 +290,22 @@
     <Compile Include="include\protected_io.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="include\radio_config.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="include\radio_config_Si4468.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="include\SI4468.h">
+    <Compile Include="include\Si446x.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\Si446x_config.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\Si446x_defs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="include\Si446x_spi.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="include\spi_basic.h">
@@ -311,13 +323,22 @@
     <Compile Include="main.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="ping_client.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="ping_server.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\driver_init.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\protected_io.S">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\SI4468.c">
+    <Compile Include="src\Si446x.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Si446x_spi.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\spi_basic.c">

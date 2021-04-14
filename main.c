@@ -3,12 +3,13 @@
 #include <util/delay.h>
 #include <string.h>
 
+/*
 #define ERROR 0x46
 #define SUCCESS 0x50
 #define PACKET_NONE		0
 #define PACKET_OK		1
 #define PACKET_INVALID	2
-#define CHANNEL 20
+#define CHANNEL 0
 #define MAX_PACKET_SIZE 10
 typedef struct{
 	uint8_t ready;
@@ -17,8 +18,7 @@ typedef struct{
 	uint8_t buffer[MAX_PACKET_SIZE];
 } pingInfo_t;
 
-#define USART_RX_BUFFER_SIZE 64     /* 2,4,8,16,32,64,128 or 256 bytes */
-#define USART_TX_BUFFER_SIZE 64     /* 2,4,8,16,32,64,128 or 256 bytes */
+#define USART_RX_BUFFER_SIZE t#define USART_TX_BUFFER_SIZE 64     
 #define USART_RX_BUFFER_MASK (USART_RX_BUFFER_SIZE - 1)
 #define USART_TX_BUFFER_MASK (USART_TX_BUFFER_SIZE - 1)
 
@@ -29,38 +29,55 @@ typedef struct{
 #error TX buffer size is not a power of 2
 #endif
 
-/* Static Variables */
 static unsigned char USART_RxBuf[USART_RX_BUFFER_SIZE];
 static volatile unsigned char USART_RxHead;
 static volatile unsigned char USART_RxTail;
 static unsigned char USART_TxBuf[USART_TX_BUFFER_SIZE];
 static volatile unsigned char USART_TxHead;
 static volatile unsigned char USART_TxTail;
+static volatile bool needclear=false;
 
-/* Prototypes */
+
 void USART1_Init(unsigned int ubrr_val);
 unsigned char USART1_Receive(void);
 void USART1_Transmit(unsigned char data);
 static uint8_t Interrupt_vector[9];
 static uint8_t cliflag;
 static uint8_t debugging=0;
+
 int main_station(void)
 {
-
-	//USART_0_write(SI4468_GetState());
-	USART_0_write(SI4468_RX(CHANNEL));
-	//USART_0_write(SI4468_GetState());
-	
+	uint8_t RX_buff[64];
+	SI4468_RX(CHANNEL);
 	while (1)
 	{
-		//USART_0_write(PD6_get_level());
-		if (PD4_get_level())
-			USART_0_write_block("CTS clear\n",sizeof("CTS clear\n"));
-		//if(PD2_get_level()==0)
-			//USART_0_write(SI4468_Clear_All_Interrupt(temp));
-		//USART_0_write(PD2_get_level());
-		//if(SI4468_GetState()==SI446X_STATE_SLEEP)
-		//USART_0_write_block(temp,8);
+		USART_0_write(SI4468_GetState());
+		if(needclear){
+			USART_0_write(0x11);
+			SI4468_Clear_All_Interrupt(Interrupt_vector);
+			needclear=false;
+			EIMSK |= (1<<INT0);
+		}
+		else if(USART_RxTail!=USART_RxHead){
+			USART_0_write(0x12);
+			uint8_t size;
+			uint8_t buff[USART_RX_BUFFER_SIZE];
+			if(USART_RxHead>USART_RxTail){
+				size = USART_RxTail-USART_RxHead;
+				memcpy(buff,&USART_RxBuf[USART_RxTail],size);
+			}
+			else{
+				size= (USART_RX_BUFFER_SIZE-USART_RxTail);
+				memcpy(buff,&USART_RxBuf[USART_RxTail],size);
+				memcpy(&buff[size],&USART_RxBuf[0],USART_RxHead+1);
+				size+=USART_RxHead;
+			}
+			//USART_0_write_block(buff,size);
+			PB2_set_level(0);
+			SI4468_TX(buff,size,CHANNEL,SI446X_STATE_RX);
+			PB2_set_level(1);
+			USART_RxTail=USART_RxHead;
+		}
 		_delay_ms(3000);
 	}
 }
@@ -68,14 +85,40 @@ int main_station(void)
 int main_turtlebot(void)
 {
 	//USART_0_write(SI4468_TX(1));
+	USART_0_write(SI4468_TX("Hello World",sizeof("Hello World"),CHANNEL,SI446X_STATE_RX));
 	while (1)
 	{
-		if (PD4_get_level())
-			//USART_0_write_block("CTS clear\n",sizeof("CTS clear\n"));
-			USART_0_write(SI4468_TX("Hello World",sizeof("Hello World"),CHANNEL,SI446X_STATE_TX));
+		USART_0_write(SI4468_GetState());
+		if(needclear){
+			USART_0_write(0x11);
+			SI4468_Clear_All_Interrupt(Interrupt_vector);
+			needclear=false;
+			EIMSK |= (1<<INT0);
+		}
+		else if(USART_RxTail!=USART_RxHead){
+			USART_0_write(0x12);
+			uint8_t size;
+			uint8_t buff[USART_RX_BUFFER_SIZE];
+			if(USART_RxHead>USART_RxTail){
+				size = USART_RxTail-USART_RxHead;
+				memcpy(buff,&USART_RxBuf[USART_RxTail],size);
+			}
+			else{
+				size= (USART_RX_BUFFER_SIZE-USART_RxTail);
+				memcpy(buff,&USART_RxBuf[USART_RxTail],size);
+				memcpy(&buff[size],&USART_RxBuf[0],USART_RxHead+1);
+				size+=USART_RxHead;
+			}
+			//USART_0_write_block(buff,size);
+			PB2_set_level(0);
+			SI4468_TX(buff,size,CHANNEL,SI446X_STATE_RX);
+			PB2_set_level(1);
+			USART_RxTail=USART_RxHead;
+		}
 		_delay_ms(3000);
 	}
 }
+
 
 int main(void)
 {
@@ -90,12 +133,22 @@ int main(void)
 	//USART_0_write(SI4468_START_SEQUENCE());
 	
 	SI4468_INIT();
+	USART_0_write(PD4_get_level());
+	PD2_set_dir(PORT_DIR_IN);
+	PD2_set_pull_mode(PORT_PULL_OFF);
+	EIMSK |= (1<<INT0);
+	EICRA = (0<<ISC01)|(0<<ISC00);
+	//SI4468_Clear_All_Interrupt(NULL);
 	
-	main_station();
+	
+	//COM4
 	//main_turtlebot();
+	//COM5
+	main_station();
+	//
 	
 	
-	/*
+	while(1);
 	while (1)
 	{
 		//USART_0_write(PD4_get_level());
@@ -103,20 +156,20 @@ int main(void)
 		//USART_0_write(SI4468_WAITCTS());
 		_delay_ms(3000);
 	}
-	*/
-	return 0;
+	//return 0;
 }
+*/
 
+/*
 ISR(USART_RX_vect)
 {
 	unsigned char data;
 	unsigned char tmphead;
 
-	/* Read the received data */
 	data = UDR0;
 	
 	//Process data
-	USART_0_write(data);
+	//USART_0_write(data);
 	
 	tmphead = (USART_RxHead + 1) & USART_RX_BUFFER_MASK;
 	USART_RxHead = tmphead;
@@ -130,34 +183,22 @@ ISR(USART_RX_vect)
 ISR(USART_UDRE_vect)
 {
 	unsigned char tmptail;
-
-	/* Check if all data is transmitted */
 	if (USART_TxHead != USART_TxTail) {
-		/* Calculate buffer index */
 		tmptail = (USART_TxTail + 1) & USART_TX_BUFFER_MASK;
-		/* Store new index */
 		USART_TxTail = tmptail;
-		/* Start transmission */
 		UDR0 = USART_TxBuf[tmptail];
 		} else {
-		/* Disable UDRE interrupt */
 		UCSR0B &= ~(1<<UDRIE0);
 	}
-	
-	//USART_0_write('T');
 }
 
 unsigned char USART1_Receive(void)
 {
 	unsigned char tmptail;
 	
-	/* Wait for incoming data */
 	while (USART_RxHead == USART_RxTail);
-	/* Calculate buffer index */
 	tmptail = (USART_RxTail + 1) & USART_RX_BUFFER_MASK;
-	/* Store new index */
 	USART_RxTail = tmptail;
-	/* Return data */
 	return USART_RxBuf[tmptail];
 }
 
@@ -165,31 +206,16 @@ void USART1_Transmit(unsigned char data)
 {
 	unsigned char tmphead;
 	
-	/* Calculate buffer index */
 	tmphead = (USART_TxHead + 1) & USART_TX_BUFFER_MASK;
-	/* Wait for free space in buffer */
 	while (tmphead == USART_TxTail);
-	/* Store data in buffer */
 	USART_TxBuf[tmphead] = data;
-	/* Store new index */
 	USART_TxHead = tmphead;
-	/* Enable UDRE interrupt */
 	UCSR0B |= (1<<UDRIE0);
 }
 
 ISR(INT0_vect){
-	EIMSK = (0<<INT0);
 	USART_0_write(PD2_get_level());
-	SI4468_Clear_All_Interrupt(Interrupt_vector);
-	for(uint8_t i = 0;i<9;++i)
-		USART_0_write(Interrupt_vector[i]);
-	USART_0_write(PD2_get_level());
-	EIMSK = (1<<INT0);
-	//SI4468_GET_INT_STATUS(false);
-	/*
-	uint8_t buff[8];
-	uint8_t temp[8];
-	SI4468_DoAPI(GET_INT_STATUS,sizeof(GET_INT_STATUS),buff,8);
-	USART_0_write_block(temp,8);
-	*/
+	needclear=true;
+	EIMSK &= (0<<INT0);
 }
+*/

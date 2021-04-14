@@ -76,10 +76,7 @@ void SPI_0_initialization(void)
 	
 	//PD2-NIRQ
 	
-	PD2_set_dir(PORT_DIR_IN);
-	PD2_set_pull_mode(PORT_PULL_OFF);
-	EIMSK = (1<<INT0);
-	EICRA = (1<<ISC01)|(0<<ISC00);
+	
 	
 	
 	//PD4-GP1
@@ -143,6 +140,4 @@ void system_init()
 	
 	SPI_0_initialization();
 	
-	
-
 }

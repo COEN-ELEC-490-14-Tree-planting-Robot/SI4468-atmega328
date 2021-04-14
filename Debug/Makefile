@@ -57,8 +57,11 @@ C_SRCS +=  \
 ../examples/src/spi_basic_example.c \
 ../examples/src/usart_basic_example.c \
 ../main.c \
+../ping_client.c \
+../ping_server.c \
 ../src/driver_init.c \
-../src/SI4468.c \
+../src/Si446x.c \
+../src/Si446x_spi.c \
 ../src/spi_basic.c \
 ../src/usart_basic.c
 
@@ -76,9 +79,12 @@ driver_isr.o \
 examples/src/spi_basic_example.o \
 examples/src/usart_basic_example.o \
 main.o \
+ping_client.o \
+ping_server.o \
 src/driver_init.o \
 src/protected_io.o \
-src/SI4468.o \
+src/Si446x.o \
+src/Si446x_spi.o \
 src/spi_basic.o \
 src/usart_basic.o
 
@@ -88,9 +94,12 @@ driver_isr.o \
 examples/src/spi_basic_example.o \
 examples/src/usart_basic_example.o \
 main.o \
+ping_client.o \
+ping_server.o \
 src/driver_init.o \
 src/protected_io.o \
-src/SI4468.o \
+src/Si446x.o \
+src/Si446x_spi.o \
 src/spi_basic.o \
 src/usart_basic.o
 
@@ -100,9 +109,12 @@ driver_isr.d \
 examples/src/spi_basic_example.d \
 examples/src/usart_basic_example.d \
 main.d \
+ping_client.d \
+ping_server.d \
 src/driver_init.d \
 src/protected_io.d \
-src/SI4468.d \
+src/Si446x.d \
+src/Si446x_spi.d \
 src/spi_basic.d \
 src/usart_basic.d
 
@@ -112,9 +124,12 @@ driver_isr.d \
 examples/src/spi_basic_example.d \
 examples/src/usart_basic_example.d \
 main.d \
+ping_client.d \
+ping_server.d \
 src/driver_init.d \
 src/protected_io.d \
-src/SI4468.d \
+src/Si446x.d \
+src/Si446x_spi.d \
 src/spi_basic.d \
 src/usart_basic.d
 
@@ -167,6 +182,20 @@ examples/src/usart_basic_example.o: ../examples/src/usart_basic_example.c
 	@echo Finished building: $<
 	
 
+./ping_client.o: .././ping_client.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)D:\Atmel\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"../Config" -I"../examples/include" -I"../include" -I"../utils" -I"../utils/assembler" -I".." -I"D:\Atmel\7.0\Packs\atmel\ATmega_DFP\1.6.364\include"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega328p -B "D:\Atmel\7.0\Packs\atmel\ATmega_DFP\1.6.364\gcc\dev\atmega328p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+./ping_server.o: .././ping_server.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)D:\Atmel\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"../Config" -I"../examples/include" -I"../include" -I"../utils" -I"../utils/assembler" -I".." -I"D:\Atmel\7.0\Packs\atmel\ATmega_DFP\1.6.364\include"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega328p -B "D:\Atmel\7.0\Packs\atmel\ATmega_DFP\1.6.364\gcc\dev\atmega328p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
 src/driver_init.o: ../src/driver_init.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
@@ -174,7 +203,14 @@ src/driver_init.o: ../src/driver_init.c
 	@echo Finished building: $<
 	
 
-src/SI4468.o: ../src/SI4468.c
+src/Si446x.o: ../src/Si446x.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 5.4.0
+	$(QUOTE)D:\Atmel\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"../Config" -I"../examples/include" -I"../include" -I"../utils" -I"../utils/assembler" -I".." -I"D:\Atmel\7.0\Packs\atmel\ATmega_DFP\1.6.364\include"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega328p -B "D:\Atmel\7.0\Packs\atmel\ATmega_DFP\1.6.364\gcc\dev\atmega328p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
+	@echo Finished building: $<
+	
+
+src/Si446x_spi.o: ../src/Si446x_spi.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 5.4.0
 	$(QUOTE)D:\Atmel\7.0\toolchain\avr8\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -x c -funsigned-char -funsigned-bitfields -DDEBUG  -I"../Config" -I"../examples/include" -I"../include" -I"../utils" -I"../utils/assembler" -I".." -I"D:\Atmel\7.0\Packs\atmel\ATmega_DFP\1.6.364\include"  -Og -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega328p -B "D:\Atmel\7.0\Packs\atmel\ATmega_DFP\1.6.364\gcc\dev\atmega328p" -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

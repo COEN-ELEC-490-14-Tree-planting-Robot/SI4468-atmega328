@@ -205,7 +205,7 @@ void USART_0_write(const uint8_t data)
 }
 
 void USART_0_write_block(const char * data,  uint8_t size )
-{
+{ 
 	for(uint8_t i = 0;i<size;i++)
 		USART_0_write(data[i]);
 }

@@ -46,10 +46,12 @@
 #define MAX_PACKET_LEN	128
 
 static const uint8_t config[]  = RADIO_CONFIGURATION_DATA_ARRAY;
+static const uint8_t powerup[] = {0x07,RF_POWER_UP};
 
 #define SI4468_FIXED_LENGTH 0
 #define IDLE_STATE SI446X_STATE_READY
 
+/*
 typedef enum
 {
 	SI446X_STATE_NOCHANGE	= 0x00,
@@ -63,43 +65,48 @@ typedef enum
 	SI446X_STATE_RX			= 0x08
 } si446x_state_t;
 
+*/
 #ifndef SI4468_H_
 #define SI4468_H_
 
-uint8_t SI4468_Clear_All_Interrupt(void* buff);
-uint8_t SI4468_Clear_Some_Interrupts(void* buff, uint8_t clearPH, uint8_t clearMODEM, uint8_t clearCHIP);
-uint8_t SI4468_INIT();
-uint8_t SI4468_SetState(si446x_state_t newState);
-uint8_t SI4468_DoAPI(void* data, uint8_t len, void* out, uint8_t outLen);
-uint8_t waitForResponse(void* out, uint8_t outLen, uint8_t useTimeout);
-uint8_t getResponse(void* buff, uint8_t len);
-si446x_state_t SI4468_GetState(void);
-uint8_t SI4468_Sleep();
-uint8_t setProperties(uint16_t prop, void* values, uint8_t len);
-inline uint8_t setProperty(uint16_t prop, uint8_t value){return setProperties(prop, &value, 1);}
-// Read a single property
-uint8_t getProperties(uint16_t prop, void* values, uint8_t len);
-inline uint8_t getProperty(uint16_t prop) { uint8_t val; getProperties(prop, &val, 1); return val;}
-uint8_t SI4468_TX(void* packet, uint8_t len, uint8_t channel, si446x_state_t onTxFinish);
-uint8_t SI4468_RX(uint8_t channel);
-void SI4468_Read(void* buff, uint8_t len);
-
-//Deprecated functions,Need change
-//######################################################################################################################
-uint8_t SI4468_WaitCTS();
-uint8_t SI4468_NOP();
-void SI4468_PART_INFO();
-void SI4468_FUNC_INFO();
-uint8_t SI4468_GET_CHIP_STATUS();
-void SI4468_GET_PH_STATUS();
-void SI4468_GET_PROPERTY(uint8_t group, uint8_t numprops, uint8_t startprops);
-uint8_t SI4468_SET_PROPERTY(uint8_t group, uint8_t numprops, uint8_t startprops,const uint8_t * params, uint8_t size);
-void SI4468_START_TX(uint8_t channel, uint8_t TX_COMPLETE_STATE, bool RETRANSMIT,bool START);
-void SI4468_START_RX(uint8_t channel, bool START, uint8_t RXTIMEOUT_STATE, uint8_t RXVALID_STATE, uint8_t RXINVALID_STATE);
-uint8_t SI4468_WriteTxDataBuffer(uint8_t * data , uint8_t size);
-uint8_t SI4468_ReadRxDataBuffer();
-uint8_t SI4468_GPIO_PIN_CFG();
-uint8_t SI4468_GET_INT_STATUS(bool);
-uint8_t SI4468_REQUEST_DEVICE_STATE();
+//uint8_t SI4468_PowerUp();
+//uint8_t SI4468_Clear_All_Interrupt(void* buff);
+//uint8_t SI4468_Clear_Some_Interrupts(void* buff, uint8_t clearPH, uint8_t clearMODEM, uint8_t clearCHIP);
+//uint8_t SI4468_INIT();
+//uint8_t SI4468_SetState(si446x_state_t newState);
+//uint8_t SI4468_DoAPI(void* data, uint8_t len, void* out, uint8_t outLen);
+//uint8_t waitForResponse(void* out, uint8_t outLen, uint8_t useTimeout);
+//uint8_t getResponse(void* buff, uint8_t len);
+//si446x_state_t SI4468_GetState(void);
+//uint8_t SI4468_Sleep();
+//uint8_t setProperties(uint16_t prop, void* values, uint8_t len);
+//inline uint8_t setProperty(uint16_t prop, uint8_t value){return setProperties(prop, &value, 1);}
+//// Read a single property
+//uint8_t SI4468_GetProperties(uint8_t group, uint8_t prop, void* values, uint8_t len);
+////inline uint8_t getProperty(uint16_t prop) { uint8_t val; GetProperties(prop, &val, 1); return val;}
+//uint8_t SI4468_TX(void* packet, uint8_t len, uint8_t channel, si446x_state_t onTxFinish);
+//uint8_t SI4468_RX(uint8_t channel);
+//void SI4468_Read(void* buff, uint8_t len);
+//uint8_t SI4468_RequestDeviceState();
+//uint8_t SI4468_PartInfo();
+//uint8_t SI4468_ConfigureGPIO();
+//
+////Deprecated functions,Need change
+////######################################################################################################################
+//uint8_t SI4468_WaitCTS();
+//uint8_t SI4468_NOP();
+//void SI4468_PART_INFO();
+//void SI4468_FUNC_INFO();
+//uint8_t SI4468_GET_CHIP_STATUS();
+//void SI4468_GET_PH_STATUS();
+//void SI4468_GET_PROPERTY(uint8_t group, uint8_t numprops, uint8_t startprops);
+//uint8_t SI4468_SET_PROPERTY(uint8_t group, uint8_t numprops, uint8_t startprops,const uint8_t * params, uint8_t size);
+//void SI4468_START_TX(uint8_t channel, uint8_t TX_COMPLETE_STATE, bool RETRANSMIT,bool START);
+//void SI4468_START_RX(uint8_t channel, bool START, uint8_t RXTIMEOUT_STATE, uint8_t RXVALID_STATE, uint8_t RXINVALID_STATE);
+//uint8_t SI4468_WriteTxDataBuffer(uint8_t * data , uint8_t size);
+//uint8_t SI4468_ReadRxDataBuffer();
+//uint8_t SI4468_GPIO_PIN_CFG();
+//uint8_t SI4468_GET_INT_STATUS(bool);
+//uint8_t SI4468_REQUEST_DEVICE_STATE();
 
 #endif /* SI4468_H_ */
